@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>again — recurring tasks that refuse to disappear.</title>
+<meta name="description" content="no boards. no projects. just recurring tasks. add it once. it texts you until it's done. SMS-first task reminders for people who actually do things.">
+<meta property="og:title" content="again — recurring tasks that refuse to disappear.">
+<meta property="og:description" content="no boards. no projects. just recurring tasks. it texts you. you reply done. it happens again.">
+<meta property="og:url" content="https://getagain.co.uk">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface-2: #171717;
+    --border: #1e1e1e;
+    --border-2: #2a2a2a;
+    --text-1: #f0f0f0;
+    --text-2: #888888;
+    --text-3: #444444;
+    --accent: #2563eb;
+    --accent-dim: #1d4ed8;
+    --danger: #dc2626;
+    --danger-dim: #7f1d1d;
+    --success: #16a34a;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html {
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body { min-height: 100vh; overflow-x: hidden; }
+
+  /* ============================================================
+     SECTION: HERO
+     ============================================================ */
+  .hero-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 48px 0;
+  }
+
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-2);
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+    opacity: 0; animation: fadeUp 0.5s ease 0.05s forwards;
+  }
+
+  .hero-rule {
+    width: 100%; height: 1px; background: var(--border);
+    margin-bottom: 120px;
+    opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .hero-content {
+    opacity: 0; animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--sans);
+    font-size: 52px;
+    font-weight: 500;
+    line-height: 1.08;
+    color: var(--text-1);
+    letter-spacing: -0.025em;
+    margin-bottom: 40px;
+  }
+
+  .hero-title em { font-style: normal; color: var(--text-2); }
+
+  .hero-rule-short {
+    width: 100%; height: 1px; background: var(--border);
+    margin-bottom: 28px;
+  }
+
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-2);
+    line-height: 1.8;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+
+  .hero-cta {
+    margin-top: 48px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--text-1); color: #0a0a0a;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    padding: 14px 28px; border: none; cursor: pointer;
+    letter-spacing: 0.02em; transition: all 0.15s;
+    width: fit-content; text-decoration: none;
+  }
+  .btn-primary:hover { background: #e0e0e0; }
+
+  .hero-hint {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-3); letter-spacing: 0.03em;
+  }
+
+  /* ============ PHONE MOCK ============ */
+  .phone-mock {
+    width: 280px; margin: 0 auto;
+    background: #0d0d0d;
+    border: 1.5px solid #2a2a2a;
+    border-radius: 36px;
+    padding: 16px 12px;
+    box-shadow: 0 0 0 1px #111, 0 40px 80px rgba(0,0,0,0.8);
+    opacity: 0; animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+  .phone-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 8px 12px;
+  }
+  .phone-time { font-family: var(--mono); font-size: 12px; color: #888; }
+  .phone-icons { font-size: 10px; color: #666; letter-spacing: 3px; }
+  .phone-header {
+    background: #111; padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .phone-back { font-size: 18px; color: var(--accent); }
+  .phone-contact {
+    font-family: var(--sans); font-size: 15px; font-weight: 500;
+    color: var(--text-1); letter-spacing: 0.05em;
+  }
+  .phone-body { padding: 20px 12px; min-height: 280px; }
+
+  .sms-bubble {
+    background: #1c1c1e;
+    border-radius: 18px 18px 18px 4px;
+    padding: 12px 16px;
+    max-width: 85%; margin-bottom: 4px;
+    opacity: 0; transform: translateY(8px);
+  }
+  .sms-task { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text-1); }
+  .sms-body { font-family: var(--sans); font-size: 13px; color: #aaa; margin-top: 4px; line-height: 1.5; }
+  .sms-cmd { font-family: var(--mono); font-size: 12px; color: #666; margin-top: 6px; }
+  .sms-cmd strong { color: var(--text-2); }
+
+  .sms-outbound {
+    display: flex; justify-content: flex-end; margin-bottom: 8px;
+    opacity: 0; transform: translateY(8px);
+  }
+  .sms-outbound-bubble {
+    background: var(--accent); border-radius: 18px 18px 4px 18px;
+    padding: 10px 16px; max-width: 75%;
+  }
+  .sms-outbound-bubble span { font-family: var(--mono); font-size: 13px; color: #fff; }
+
+  .sms-msg-1 { animation: msgReveal 0.4s ease 1.2s forwards; margin-bottom: 20px; }
+  .sms-msg-2 { animation: msgReveal 0.4s ease 2.4s forwards; }
+  .sms-msg-3 { animation: msgReveal 0.4s ease 3.2s forwards; }
+
+  /* ============================================================
+     SECTION: HOW IT WORKS
+     ============================================================ */
+  .how-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 160px 48px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+
+  .section-rule {
+    width: 100%; height: 1px; background: var(--border);
+    margin-bottom: 16px;
+  }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+
+  .how-step { }
+
+  .step-number {
+    font-family: var(--mono);
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--border-2);
+    line-height: 1;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .step-title {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-1);
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-2);
+    line-height: 1.8;
+  }
+
+  /* mini SMS preview inside steps */
+  .step-sms {
+    margin-top: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+
+  .step-sms-from {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .step-sms-body {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.7;
+  }
+
+  .step-sms-body strong {
+    color: var(--text-1);
+    font-weight: 500;
+  }
+
+  .step-sms-reply {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .step-sms-reply span {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  /* ============================================================
+     SECTION: WHO IT'S FOR — persona SMS examples
+     ============================================================ */
+  .personas-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px 160px;
+  }
+
+  .personas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 0;
+  }
+
+  .persona-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .persona-card:hover {
+    border-color: var(--border-2);
+  }
+
+  .persona-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .persona-role {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .persona-task {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-1);
+    letter-spacing: 0.03em;
+  }
+
+  .persona-sms {
+    padding: 20px 24px;
+  }
+
+  .persona-sms-line {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.8;
+  }
+
+  .persona-sms-line strong {
+    color: var(--text-1);
+    font-weight: 500;
+  }
+
+  .persona-sms-line.cmd {
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  .persona-sms-line.cmd strong {
+    color: var(--text-2);
+  }
+
+  .persona-done {
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .done-dot {
+    width: 6px; height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .done-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--success);
+    letter-spacing: 0.03em;
+  }
+
+  /* ============================================================
+     SECTION: THE PITCH — why SMS, not another app
+     ============================================================ */
+  .pitch-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 48px 160px;
+  }
+
+  .pitch-text {
+    font-family: var(--sans);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text-1);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+
+  .pitch-text em {
+    font-style: normal;
+    color: var(--text-2);
+  }
+
+  .pitch-sub {
+    margin-top: 32px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-3);
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  /* ============================================================
+     SECTION: PRICING
+     ============================================================ */
+  .pricing-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px 160px;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 640px;
+  }
+
+  .price-card {
+    border: 1px solid var(--border);
+    padding: 40px 32px;
+    transition: border-color 0.2s;
+  }
+
+  .price-card:hover {
+    border-color: var(--border-2);
+  }
+
+  .price-card.featured {
+    border-color: var(--accent);
+    position: relative;
+  }
+
+  .price-badge {
+    position: absolute;
+    top: -1px; left: 32px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+  }
+
+  .price-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .price-amount {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--text-1);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .price-period {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--text-3);
+  }
+
+  .price-note {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 8px;
+    margin-bottom: 28px;
+  }
+
+  .price-features {
+    list-style: none;
+    padding: 0;
+  }
+
+  .price-features li {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-2);
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.01em;
+  }
+
+  .price-features li:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* free card */
+  .price-free {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 4px;
+  }
+
+  .price-free-sub {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    margin-bottom: 28px;
+  }
+
+  /* ============================================================
+     SECTION: FINAL CTA
+     ============================================================ */
+  .final-section {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 48px 120px;
+    text-align: center;
+  }
+
+  .final-rule {
+    width: 60px; height: 1px;
+    background: var(--border-2);
+    margin: 0 auto 48px;
+  }
+
+  .final-title {
+    font-family: var(--sans);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .final-sub {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-2);
+    font-weight: 300;
+    margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  .final-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  .footer {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 48px 48px;
+  }
+
+  .footer-rule {
+    width: 100%; height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-wordmark {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-3);
+    font-weight: 300;
+  }
+
+  .footer-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+  }
+
+  /* ============================================================
+     SCROLL ANIMATIONS
+     ============================================================ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* stagger children */
+  .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .reveal-stagger.visible > *:nth-child(1) { transition-delay: 0s; opacity: 1; transform: translateY(0); }
+  .reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+  .reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+
+  /* ============================================================
+     KEYFRAMES
+     ============================================================ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes msgReveal {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     MOBILE RESPONSIVE
+     ============================================================ */
+  @media (max-width: 768px) {
+    .hero-section { padding: 48px 24px 0; }
+    .hero-rule { margin-bottom: 64px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 64px; }
+    .hero-title { font-size: 36px; margin-bottom: 32px; }
+    .hero-sub { font-size: 13px; }
+    .phone-mock { width: 260px; }
+
+    .how-section { padding: 120px 24px; }
+    .how-grid { grid-template-columns: 1fr; gap: 48px; }
+
+    .personas-section { padding: 0 24px 120px; }
+    .personas-grid { grid-template-columns: 1fr; gap: 20px; }
+
+    .pitch-section { padding: 0 24px 120px; }
+    .pitch-text { font-size: 22px; }
+
+    .pricing-section { padding: 0 24px 120px; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 100%; }
+
+    .final-section { padding: 0 24px 80px; }
+    .final-title { font-size: 26px; }
+
+    .footer { padding: 0 24px 32px; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-section { padding: 32px 20px 0; }
+    .hero-rule { margin-bottom: 48px; }
+    .hero-title { font-size: 28px; margin-bottom: 24px; }
+    .hero-sub { font-size: 12px; }
+    .btn-primary { width: 100%; padding: 16px 28px; text-align: center; }
+    .phone-mock { width: 240px; }
+
+    .how-section { padding: 80px 20px; }
+    .step-number { font-size: 36px; }
+    .step-title { font-size: 18px; }
+
+    .personas-section { padding: 0 20px 80px; }
+    .pitch-section { padding: 0 20px 80px; }
+    .pitch-text { font-size: 20px; }
+    .pricing-section { padding: 0 20px 80px; }
+    .final-section { padding: 0 20px 64px; }
+    .footer { padding: 0 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero-section">
+  <div class="wordmark">again</div>
+  <div class="hero-rule"></div>
+
+  <div class="hero-grid">
+    <div class="hero-content">
+      <h1 class="hero-title">recurring tasks that refuse to <em>disappear.</em></h1>
+      <div class="hero-rule-short"></div>
+      <p class="hero-sub">no boards. no projects. just recurring tasks.</p>
+      <p class="hero-sub">add it once. see it again until it's done.</p>
+      <div class="hero-cta">
+        <a href="/onboarding" class="btn-primary">start free — 1 task</a>
+        <span class="hero-hint">no app to open. it finds you.</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="phone-mock">
+        <div class="phone-bar">
+          <span class="phone-time">9:41</span>
+          <span class="phone-icons">▲ ⊙ ▮</span>
+        </div>
+        <div class="phone-header">
+          <span class="phone-back">‹</span>
+          <span class="phone-contact">AGAIN</span>
+        </div>
+        <div class="phone-body">
+          <div class="sms-bubble sms-msg-1" style="margin-bottom: 20px;">
+            <div class="sms-task">SEND INVOICES</div>
+            <div class="sms-body">due today at 9:00 AM.</div>
+            <div class="sms-cmd">reply <strong>DONE</strong> or <strong>SNOOZE</strong>.</div>
+          </div>
+          <div class="sms-outbound sms-msg-2">
+            <div class="sms-outbound-bubble">
+              <span>DONE</span>
+            </div>
+          </div>
+          <div class="sms-bubble sms-msg-3">
+            <div class="sms-task">SEND INVOICES</div>
+            <div class="sms-body">done.</div>
+            <div class="sms-body">next: March 1 at 9:00 AM.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section class="how-section">
+  <div class="section-rule"></div>
+  <div class="section-label">how it works</div>
+
+  <div class="how-grid reveal-stagger" id="how-grid">
+
+    <div class="how-step">
+      <div class="step-number">01</div>
+      <div class="step-title">add a task.</div>
+      <div class="step-desc">tell us what and when. daily, weekly, monthly. pick a time. that's it.</div>
+      <div class="step-sms">
+        <div class="step-sms-from">you set up</div>
+        <div class="step-sms-body">
+          <strong>CHASE LATE PAYMENTS</strong><br>
+          every friday · 9:00 AM
+        </div>
+      </div>
+    </div>
+
+    <div class="how-step">
+      <div class="step-number">02</div>
+      <div class="step-title">get a text.</div>
+      <div class="step-desc">when it's due, you get an SMS. not a notification you'll swipe away. a text you'll actually read.</div>
+      <div class="step-sms">
+        <div class="step-sms-from">again texts you</div>
+        <div class="step-sms-body">
+          <strong>CHASE LATE PAYMENTS</strong><br>
+          due today at 9:00 AM.<br>
+          <span style="color: var(--text-3);">reply <strong style="color: var(--text-2);">DONE</strong> or <strong style="color: var(--text-2);">SNOOZE</strong>.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="how-step">
+      <div class="step-number">03</div>
+      <div class="step-title">reply done.</div>
+      <div class="step-desc">done? say so. not ready? snooze it. it'll come back. it always comes back.</div>
+      <div class="step-sms">
+        <div class="step-sms-from">confirmation</div>
+        <div class="step-sms-body">
+          <strong>CHASE LATE PAYMENTS</strong><br>
+          done.<br>
+          next: March 14 at 9:00 AM.
+        </div>
+        <div class="step-sms-reply">
+          <span>✓ see you next friday</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     WHO IT'S FOR — three personas, three SMS examples
+     ============================================================ -->
+<section class="personas-section">
+  <div class="section-rule"></div>
+  <div class="section-label">who it's for</div>
+
+  <div class="personas-grid reveal-stagger" id="personas-grid">
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-role">plumber</div>
+        <div class="persona-task">GAS SAFETY CERTS</div>
+      </div>
+      <div class="persona-sms">
+        <div class="persona-sms-line"><strong>GAS SAFETY CERTS</strong></div>
+        <div class="persona-sms-line">due today at 8:00 AM.</div>
+        <div class="persona-sms-line cmd">reply <strong>DONE</strong> or <strong>SNOOZE</strong>.</div>
+      </div>
+      <div class="persona-done">
+        <div class="done-dot"></div>
+        <div class="done-text">stays compliant. no spreadsheet needed.</div>
+      </div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-role">freelancer</div>
+        <div class="persona-task">SEND INVOICES</div>
+      </div>
+      <div class="persona-sms">
+        <div class="persona-sms-line"><strong>SEND INVOICES</strong></div>
+        <div class="persona-sms-line">overdue by 2 days.</div>
+        <div class="persona-sms-line cmd">reply <strong>DONE</strong> or <strong>SNOOZE</strong>.</div>
+      </div>
+      <div class="persona-done">
+        <div class="done-dot"></div>
+        <div class="done-text">cash flow protected. every single week.</div>
+      </div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-role">founder</div>
+        <div class="persona-task">WEEKLY REVIEW</div>
+      </div>
+      <div class="persona-sms">
+        <div class="persona-sms-line"><strong>WEEKLY REVIEW</strong></div>
+        <div class="persona-sms-line">due today at 5:00 PM.</div>
+        <div class="persona-sms-line cmd">reply <strong>DONE</strong> or <strong>SNOOZE</strong>.</div>
+      </div>
+      <div class="persona-done">
+        <div class="done-dot"></div>
+        <div class="done-text">the habit that makes everything else work.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     THE PITCH — one paragraph, emotional
+     ============================================================ -->
+<section class="pitch-section reveal" id="pitch">
+  <div class="section-rule"></div>
+  <div class="section-label">why sms</div>
+  <p class="pitch-text">
+    you've tried apps. you've tried reminders. you've tried
+    writing it on your hand. <em>the problem was never remembering.
+    the problem was caring enough to act.</em>
+  </p>
+  <p class="pitch-text" style="margin-top: 24px;">
+    a text message sits between your mum and your
+    electrician. <em>you can't ignore it. that's the point.</em>
+  </p>
+  <p class="pitch-sub">
+    again is not another productivity app. it's a number that keeps you honest.
+  </p>
+</section>
+
+<!-- ============================================================
+     PRICING
+     ============================================================ -->
+<section class="pricing-section">
+  <div class="section-rule"></div>
+  <div class="section-label">pricing</div>
+
+  <div class="pricing-grid reveal-stagger" id="pricing-grid">
+
+    <div class="price-card featured">
+      <div class="price-badge">best value</div>
+      <div class="price-label">yearly</div>
+      <div class="price-amount">£49.99<span class="price-period">/yr</span></div>
+      <div class="price-note">£4.17/month · cancel anytime</div>
+      <ul class="price-features">
+        <li>unlimited recurring tasks</li>
+        <li>sms reminders + confirmations</li>
+        <li>snooze, skip, done via reply</li>
+        <li>web dashboard</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-label">monthly</div>
+      <div class="price-amount">£7<span class="price-period">/mo</span></div>
+      <div class="price-note">no commitment · cancel anytime</div>
+      <ul class="price-features">
+        <li>unlimited recurring tasks</li>
+        <li>sms reminders + confirmations</li>
+        <li>snooze, skip, done via reply</li>
+        <li>web dashboard</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 32px;">
+    <div class="price-free">free forever: 1 active task.</div>
+    <div class="price-free-sub">no credit card required. start now, upgrade when you need more.</div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     FINAL CTA
+     ============================================================ -->
+<section class="final-section reveal" id="final">
+  <div class="final-rule"></div>
+  <h2 class="final-title">stop forgetting. start replying.</h2>
+  <p class="final-sub">add your first task in 20 seconds. no app to download. no account to configure. just your phone number and the thing you keep putting off.</p>
+  <div class="final-cta">
+    <a href="/onboarding" class="btn-primary">start free — 1 task</a>
+    <span class="hero-hint">uk beta · sms-powered · no fluff</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer-rule"></div>
+  <div class="footer-content">
+    <div class="footer-wordmark">again</div>
+    <div class="footer-note">recurring tasks that refuse to disappear.</div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     SCROLL REVEAL JS
+     ============================================================ -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>

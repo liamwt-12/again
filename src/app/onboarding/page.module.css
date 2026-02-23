@@ -1,0 +1,219 @@
+.onboarding {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.step {
+  animation: fadeUp 0.3s ease;
+}
+
+.wordmark {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 80px;
+  letter-spacing: 0.02em;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.sub {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hint:hover {
+  color: var(--text-2);
+}
+
+.error {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 12px;
+  text-align: center;
+}
+
+.backBtn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 8px;
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--text-2);
+}
+
+/* ============ TASK FORM ============ */
+.taskRow {
+  margin-bottom: 24px;
+}
+
+.fieldLabel {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.cadenceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cadenceOpt {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.cadenceOpt:hover {
+  color: var(--text-1);
+  border-color: var(--text-2);
+}
+
+.cadenceSelected {
+  color: var(--text-1);
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+/* ============ SMS PREVIEW ============ */
+.smsPreview {
+  margin-top: 32px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.smsPreviewLabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.smsPreviewText {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.smsPreviewText strong {
+  color: var(--text-1);
+  font-weight: 500;
+}
+
+/* ============ CONTACT PROMPT ============ */
+.contactPrompt {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.contactPromptLabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.contactPromptText {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.contactNumber {
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--text-1);
+  margin-top: 12px;
+  letter-spacing: 0.05em;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ MOBILE ============ */
+@media (max-width: 480px) {
+  .onboarding {
+    padding: 48px 20px;
+  }
+
+  .wordmark {
+    margin-bottom: 48px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .cadenceGrid {
+    grid-template-columns: 1fr;
+  }
+}
