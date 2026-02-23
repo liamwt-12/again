@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createServiceClient } from '@/lib/supabase';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -30,7 +28,6 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      // Find user by stripe_customer_id
       const { data: user } = await supabase
         .from('users')
         .select('id')
@@ -38,10 +35,7 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (user && subscription.status === 'active') {
-        // Upgrade to pro
         await supabase.from('users').update({ plan: 'pro' }).eq('id', user.id);
-
-        // Activate all inactive tasks
         await supabase.from('tasks').update({ status: 'active' }).eq('user_id', user.id).eq('status', 'inactive');
       }
       break;
@@ -58,10 +52,8 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (user) {
-        // Downgrade to free
         await supabase.from('users').update({ plan: 'free' }).eq('id', user.id);
 
-        // Get all active tasks, keep the first one, pause the rest
         const { data: tasks } = await supabase
           .from('tasks')
           .select('id')
@@ -70,11 +62,8 @@ export async function POST(req: NextRequest) {
           .order('created_at', { ascending: true });
 
         if (tasks && tasks.length > 1) {
-          const taskIdsToFause = tasks.slice(1).map(t => t.id);
-          await supabase
-            .from('tasks')
-            .update({ status: 'paused' })
-            .in('id', taskIdsToFause);
+          const taskIdsToPause = tasks.slice(1).map(t => t.id);
+          await supabase.from('tasks').update({ status: 'paused' }).in('id', taskIdsToPause);
         }
       }
       break;
