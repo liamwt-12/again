@@ -10,6 +10,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
+  const [normalisedPhone, setNormalisedPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +20,16 @@ export default function OnboardingPage() {
   const [cadence, setCadence] = useState<CadenceType>('daily');
   const [reminderTime, setReminderTime] = useState('09:00');
 
-  const twilioNumber = process.env.NEXT_PUBLIC_TWILIO_NUMBER || '+44 7488 892112';
+  const twilioNumber = process.env.NEXT_PUBLIC_TWILIO_NUMBER || '+447915902012';
+
+  // Format the Twilio number for display
+  function formatNumberForDisplay(num: string) {
+    const digits = num.replace(/\D/g, '');
+    if (digits.startsWith('44') && digits.length === 12) {
+      return `0${digits.slice(2, 6)} ${digits.slice(6)}`;
+    }
+    return num;
+  }
 
   // Step 1: Send OTP
   async function handleSendCode() {
@@ -32,10 +42,12 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phone.trim() }),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || 'failed to send code');
       }
+      // Store the normalised phone from the API
+      if (data.phone) setNormalisedPhone(data.phone);
       setStep(2);
     } catch (err: any) {
       setError(err.message);
@@ -50,10 +62,11 @@ export default function OnboardingPage() {
     setLoading(true);
     setError('');
     try {
+      const phoneToVerify = normalisedPhone || phone.trim();
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim(), otp: otp.trim() }),
+        body: JSON.stringify({ phone: phoneToVerify, otp: otp.trim() }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -73,11 +86,12 @@ export default function OnboardingPage() {
     setLoading(true);
     setError('');
     try {
+      const phoneToUse = normalisedPhone || phone.trim();
       const res = await fetch('/api/tasks/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: phone.trim(),
+          phone: phoneToUse,
           title: taskName.trim().toUpperCase(),
           cadence_type: cadence,
           reminder_time_local: reminderTime,
@@ -110,25 +124,29 @@ export default function OnboardingPage() {
         <div className={styles.step}>
           <div className={styles.wordmark}>again</div>
           <div className={styles.label}>step 1 of 3</div>
-          <h2 className={styles.title}>what's your number?</h2>
-          <p className={styles.sub}>we'll text you when tasks are due. nothing else.</p>
-          <input
-            className="input"
-            type="tel"
-            placeholder="+44 7700 000000"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
-          />
+          <h2 className={styles.title}>what&apos;s your number?</h2>
+          <p className={styles.sub}>we&apos;ll text you when tasks are due. nothing else.</p>
+          <div className={styles.phoneInput}>
+            <span className={styles.phonePrefix}>🇬🇧</span>
+            <input
+              className={styles.phoneField}
+              type="tel"
+              placeholder="07700 000000"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendCode()}
+              autoFocus
+            />
+          </div>
           {error && <p className={styles.error}>{error}</p>}
           <button
-            className={`btn-primary ${styles.btn}`}
+            className={styles.btn}
             onClick={handleSendCode}
             disabled={loading || !phone.trim()}
           >
             {loading ? 'sending...' : 'send code →'}
           </button>
-          <p className={styles.hint}>uk numbers only during beta.</p>
+          <p className={styles.hint}>uk mobile numbers only during beta.</p>
         </div>
       )}
 
@@ -140,7 +158,7 @@ export default function OnboardingPage() {
           <h2 className={styles.title}>check your messages.</h2>
           <p className={styles.sub}>we sent a 6-digit code to {phone}.</p>
           <input
-            className="input"
+            className={styles.otpField}
             type="text"
             inputMode="numeric"
             placeholder="000000"
@@ -152,7 +170,7 @@ export default function OnboardingPage() {
           />
           {error && <p className={styles.error}>{error}</p>}
           <button
-            className={`btn-primary ${styles.btn}`}
+            className={styles.btn}
             onClick={handleVerify}
             disabled={loading || otp.length < 6}
           >
@@ -161,7 +179,6 @@ export default function OnboardingPage() {
           <button className={styles.backBtn} onClick={() => { setStep(1); setError(''); }}>
             ← back
           </button>
-          <p className={styles.hint}>resend code</p>
         </div>
       )}
 
@@ -171,16 +188,17 @@ export default function OnboardingPage() {
           <div className={styles.wordmark}>again</div>
           <div className={styles.label}>step 3 of 3</div>
           <h2 className={styles.title}>add your first task.</h2>
-          <p className={styles.sub}>it'll text you when it's due.</p>
+          <p className={styles.sub}>it&apos;ll text you when it&apos;s due.</p>
 
           <div className={styles.taskRow}>
             <label className={styles.fieldLabel}>task name</label>
             <input
-              className="input input-sm"
+              className={styles.taskField}
               type="text"
               placeholder="e.g. send invoices"
               value={taskName}
               onChange={(e) => setTaskName(e.target.value)}
+              autoFocus
             />
           </div>
 
@@ -202,7 +220,7 @@ export default function OnboardingPage() {
           <div className={styles.taskRow}>
             <label className={styles.fieldLabel}>remind me at</label>
             <input
-              className="input input-sm"
+              className={styles.taskField}
               type="time"
               value={reminderTime}
               onChange={(e) => setReminderTime(e.target.value)}
@@ -221,17 +239,17 @@ export default function OnboardingPage() {
 
           {/* Save contact prompt */}
           <div className={styles.contactPrompt}>
-            <div className={styles.contactPromptLabel}>setup</div>
+            <div className={styles.contactPromptLabel}>save this contact</div>
             <div className={styles.contactPromptText}>
-              reminders will come from a uk mobile number.<br />
-              save it as "again" so you recognise it instantly.
+              reminders come from a uk mobile number.<br />
+              save it as &quot;again&quot; so you recognise it.
             </div>
-            <div className={styles.contactNumber}>{twilioNumber}</div>
+            <div className={styles.contactNumber}>{formatNumberForDisplay(twilioNumber)}</div>
           </div>
 
           {error && <p className={styles.error}>{error}</p>}
           <button
-            className={`btn-primary ${styles.btn}`}
+            className={styles.btn}
             onClick={handleCreateTask}
             disabled={loading || !taskName.trim()}
             style={{ marginTop: '20px' }}
