@@ -42,11 +42,104 @@
   font-weight: 300;
 }
 
-.btn {
-  width: 100%;
-  margin-top: 16px;
-  padding: 16px;
+/* ============ PHONE INPUT ============ */
+.phoneInput {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-2);
+  background: var(--surface);
+  transition: border-color 0.15s;
 }
+.phoneInput:focus-within {
+  border-color: var(--text-2);
+}
+
+.phonePrefix {
+  padding: 16px;
+  font-size: 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.phoneField {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-1);
+  font-family: var(--mono);
+  font-size: 18px;
+  padding: 16px;
+  letter-spacing: 0.04em;
+}
+.phoneField::placeholder {
+  color: var(--text-3);
+}
+
+/* ============ OTP INPUT ============ */
+.otpField {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  color: var(--text-1);
+  font-family: var(--mono);
+  font-size: 28px;
+  padding: 16px;
+  text-align: center;
+  letter-spacing: 0.3em;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.otpField:focus {
+  border-color: var(--text-2);
+}
+.otpField::placeholder {
+  color: var(--text-3);
+  letter-spacing: 0.3em;
+}
+
+/* ============ TASK FIELDS ============ */
+.taskField {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  color: var(--text-1);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 14px 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.taskField:focus {
+  border-color: var(--text-2);
+}
+.taskField::placeholder {
+  color: var(--text-3);
+}
+
+/* ============ BUTTON ============ */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: #fff;
+  color: #0a0a0a;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 16px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+  margin-top: 16px;
+}
+.btn:hover { background: #e0e0e0; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .hint {
   font-family: var(--mono);
@@ -54,11 +147,6 @@
   color: var(--text-3);
   margin-top: 12px;
   text-align: center;
-  cursor: pointer;
-}
-
-.hint:hover {
-  color: var(--text-2);
 }
 
 .error {
@@ -83,7 +171,6 @@
   margin-top: 8px;
   transition: color 0.15s;
 }
-
 .backBtn:hover {
   color: var(--text-2);
 }
@@ -121,12 +208,10 @@
   transition: all 0.15s;
   letter-spacing: 0.02em;
 }
-
 .cadenceOpt:hover {
   color: var(--text-1);
   border-color: var(--text-2);
 }
-
 .cadenceSelected {
   color: var(--text-1);
   border-color: var(--accent);
@@ -140,7 +225,6 @@
   background: var(--surface);
   border: 1px solid var(--border);
 }
-
 .smsPreviewLabel {
   font-family: var(--mono);
   font-size: 10px;
@@ -149,14 +233,12 @@
   text-transform: uppercase;
   margin-bottom: 12px;
 }
-
 .smsPreviewText {
   font-family: var(--mono);
   font-size: 13px;
   color: var(--text-2);
   line-height: 1.7;
 }
-
 .smsPreviewText strong {
   color: var(--text-1);
   font-weight: 500;
@@ -169,7 +251,6 @@
   background: var(--surface);
   border: 1px solid var(--border);
 }
-
 .contactPromptLabel {
   font-family: var(--mono);
   font-size: 10px;
@@ -178,14 +259,12 @@
   text-transform: uppercase;
   margin-bottom: 12px;
 }
-
 .contactPromptText {
   font-family: var(--mono);
   font-size: 12px;
   color: var(--text-2);
   line-height: 1.7;
 }
-
 .contactNumber {
   font-family: var(--mono);
   font-size: 16px;
@@ -201,19 +280,7 @@
 
 /* ============ MOBILE ============ */
 @media (max-width: 480px) {
-  .onboarding {
-    padding: 48px 20px;
-  }
-
-  .wordmark {
-    margin-bottom: 48px;
-  }
-
-  .title {
-    font-size: 24px;
-  }
-
-  .cadenceGrid {
-    grid-template-columns: 1fr;
-  }
+  .onboarding { padding: 48px 20px; }
+  .wordmark { margin-bottom: 48px; }
+  .title { font-size: 24px; }
 }
