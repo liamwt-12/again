@@ -3,15 +3,30 @@ import { createServiceClient } from '@/lib/supabase';
 import { sendSMS, formatOnboarding } from '@/lib/sms';
 import { calculateNextDue } from '@/lib/scheduler';
 
+function normaliseUKPhone(input: string): string | null {
+  const digits = input.replace(/\D/g, '');
+  if (digits.startsWith('0') && digits.length === 11) return '+44' + digits.slice(1);
+  if (digits.startsWith('44') && digits.length === 12) return '+' + digits;
+  if (input.startsWith('+44') && digits.length === 12) return '+' + digits;
+  if (digits.startsWith('7') && digits.length === 10) return '+44' + digits;
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const { phone, title, cadence_type, cadence_meta, reminder_time_local } = await req.json();
   const supabase = createServiceClient();
+
+  // Normalise phone
+  const normalised = normaliseUKPhone(phone || '');
+  if (!normalised) {
+    return NextResponse.json({ error: 'invalid phone number' }, { status: 400 });
+  }
 
   // Find or validate user
   const { data: user } = await supabase
     .from('users')
     .select('id, plan, phone')
-    .eq('phone', phone)
+    .eq('phone', normalised)
     .single();
 
   if (!user) {
