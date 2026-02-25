@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
   const { phone, title, cadence_type, cadence_meta, reminder_time_local } = await req.json();
   const supabase = createServiceClient();
 
-  // Normalise phone
   const normalised = normaliseUKPhone(phone || '');
   if (!normalised) {
     return NextResponse.json({ error: 'invalid phone number' }, { status: 400 });
@@ -66,11 +65,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'failed to create task' }, { status: 500 });
   }
 
-  // If this is the user's first task (active), send onboarding SMS
+  // If first task, send onboarding SMS with save contact link
   if (taskStatus === 'active' && (count || 0) === 0) {
     const onboardingText = formatOnboarding();
 
-    // Log outbound
     await supabase.from('sms_events').insert({
       user_id: user.id,
       task_id: task.id,
