@@ -1,7 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
-import { sendSMS, formatDoneConfirmation, formatSnoozeConfirmation, formatSkipConfirmation, formatNoPending, formatInvalidCommand } from '@/lib/sms';
-import { calculateNextDue, calculateSmartSnooze, calculateExplicitSnooze, formatDateForSMS, formatSnoozeTimeForSMS, calculateOverdueDays } from '@/lib/scheduler';
+import {
+  sendSMS,
+  formatDoneConfirmation,
+  formatFirstDone,
+  formatStreak,
+  formatSnoozeConfirmation,
+  formatComeback,
+  formatSkipConfirmation,
+  formatNoPending,
+  formatInvalidCommand,
+  formatPauseConfirmation,
+  formatResumeConfirmation,
+} from '@/lib/sms';
+import {
+  calculateNextDue,
+  calculateSmartSnooze,
+  calculateExplicitSnooze,
+  formatDateForSMS,
+  formatSnoozeTimeForSMS,
+  calculateOverdueDays,
+} from '@/lib/scheduler';
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -10,14 +29,27 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient();
 
-  // Look up user by phone
-  const { data: user } = await supabase
+  // Look up user by phone — try both formats
+  let user: any = null;
+  const { data: u1 } = await supabase
     .from('users')
     .select('id, phone')
     .eq('phone', from)
     .single();
+  
+  if (u1) {
+    user = u1;
+  } else {
+    // Try with + prefix if missing, or without if present
+    const altPhone = from.startsWith('+') ? from.slice(1) : `+${from}`;
+    const { data: u2 } = await supabase
+      .from('users')
+      .select('id, phone')
+      .eq('phone', altPhone)
+      .single();
+    if (u2) user = u2;
+  }
 
-  // Unrecognised number — do not respond
   if (!user) {
     return new NextResponse(
       '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
@@ -33,7 +65,6 @@ export async function POST(req: NextRequest) {
     body: body,
   });
 
-  // Parse command (case-insensitive)
   const command = body.toUpperCase().trim();
   let responseText = '';
 
@@ -44,11 +75,14 @@ export async function POST(req: NextRequest) {
   } else if (command.startsWith('SNOOZE')) {
     const duration = command.replace('SNOOZE', '').trim();
     responseText = await handleSnooze(supabase, user, duration);
+  } else if (command === 'STOP' || command === 'PAUSE') {
+    responseText = await handleStop(supabase, user);
+  } else if (command === 'START' || command === 'YES' || command === 'RESUME') {
+    responseText = await handleResume(supabase, user);
   } else {
     responseText = formatInvalidCommand();
   }
 
-  // Send response SMS
   if (responseText) {
     await supabase.from('sms_events').insert({
       user_id: user.id,
@@ -65,8 +99,10 @@ export async function POST(req: NextRequest) {
   );
 }
 
+// ============================================================
+// DONE — with first-done detection and streak tracking
+// ============================================================
 async function handleDone(supabase: any, user: any): Promise<string> {
-  // Find the most recent active task that's been reminded
   const { data: task } = await supabase
     .from('tasks')
     .select('*')
@@ -77,11 +113,8 @@ async function handleDone(supabase: any, user: any): Promise<string> {
     .limit(1)
     .single();
 
-  if (!task) {
-    return formatNoPending();
-  }
+  if (!task) return formatNoPending();
 
-  // Calculate next due date
   const nextDue = calculateNextDue(
     task.cadence_type,
     task.cadence_meta,
@@ -95,18 +128,50 @@ async function handleDone(supabase: any, user: any): Promise<string> {
     was_skipped: false,
   });
 
-  // Update task
+  // Update task — reset snooze state
   await supabase.from('tasks').update({
     next_due_at_utc: nextDue.toISOString(),
     snooze_until_utc: null,
     occurrence_snooze_count: 0,
     stuck: false,
-    last_reminded_at_utc: null, // Reset so it can be reminded again
+    last_reminded_at_utc: null,
   }).eq('id', task.id);
+
+  // Count total completions for this task (not skipped)
+  const { count: taskCompletions } = await supabase
+    .from('task_completions')
+    .select('*', { count: 'exact', head: true })
+    .eq('task_id', task.id)
+    .eq('was_skipped', false);
+
+  // Count total completions across ALL tasks for this user (for first-done detection)
+  const { count: totalUserCompletions } = await supabase
+    .from('task_completions')
+    .select('*, tasks!inner(user_id)', { count: 'exact', head: true })
+    .eq('tasks.user_id', user.id)
+    .eq('was_skipped', false);
+
+  // DELIGHT: First ever DONE
+  if ((totalUserCompletions || 0) === 1) {
+    // Mark first done time on user
+    await supabase.from('users').update({
+      first_done_at_utc: new Date().toISOString(),
+    }).eq('id', user.id);
+
+    return formatFirstDone(task.title, date, time);
+  }
+
+  // DELIGHT: Streak (every 4th consecutive completion of same task)
+  if (taskCompletions && taskCompletions > 0 && taskCompletions % 4 === 0) {
+    return formatStreak(task.title, taskCompletions, date, time);
+  }
 
   return formatDoneConfirmation(task.title, date, time);
 }
 
+// ============================================================
+// SKIP
+// ============================================================
 async function handleSkip(supabase: any, user: any): Promise<string> {
   const { data: task } = await supabase
     .from('tasks')
@@ -118,11 +183,8 @@ async function handleSkip(supabase: any, user: any): Promise<string> {
     .limit(1)
     .single();
 
-  if (!task) {
-    return formatNoPending();
-  }
+  if (!task) return formatNoPending();
 
-  // Calculate next due date (same logic as DONE)
   const nextDue = calculateNextDue(
     task.cadence_type,
     task.cadence_meta,
@@ -130,13 +192,11 @@ async function handleSkip(supabase: any, user: any): Promise<string> {
   );
   const { date, time } = formatDateForSMS(nextDue);
 
-  // Log as skipped completion
   await supabase.from('task_completions').insert({
     task_id: task.id,
     was_skipped: true,
   });
 
-  // Update task
   await supabase.from('tasks').update({
     next_due_at_utc: nextDue.toISOString(),
     snooze_until_utc: null,
@@ -148,6 +208,9 @@ async function handleSkip(supabase: any, user: any): Promise<string> {
   return formatSkipConfirmation(task.title, date, time);
 }
 
+// ============================================================
+// SNOOZE — with comeback on 4th snooze
+// ============================================================
 async function handleSnooze(supabase: any, user: any, duration: string): Promise<string> {
   const { data: task } = await supabase
     .from('tasks')
@@ -159,11 +222,19 @@ async function handleSnooze(supabase: any, user: any, duration: string): Promise
     .limit(1)
     .single();
 
-  if (!task) {
-    return formatNoPending();
+  if (!task) return formatNoPending();
+
+  const newOccurrenceCount = (task.occurrence_snooze_count || 0) + 1;
+
+  // DELIGHT: Comeback message on 4th snooze
+  if (newOccurrenceCount >= 4) {
+    await supabase.from('tasks').update({
+      occurrence_snooze_count: newOccurrenceCount,
+    }).eq('id', task.id);
+
+    return formatComeback(task.title);
   }
 
-  // Calculate snooze time
   let snoozeUntil: Date;
   if (['1H', '3H', '1D'].includes(duration)) {
     snoozeUntil = calculateExplicitSnooze(duration as '1H' | '3H' | '1D', task.reminder_time_local);
@@ -171,16 +242,60 @@ async function handleSnooze(supabase: any, user: any, duration: string): Promise
     snoozeUntil = calculateSmartSnooze();
   }
 
-  const newOccurrenceCount = (task.occurrence_snooze_count || 0) + 1;
   const snoozeDisplay = formatSnoozeTimeForSMS(snoozeUntil);
 
-  // Update task
   await supabase.from('tasks').update({
     snooze_until_utc: snoozeUntil.toISOString(),
     snooze_count: (task.snooze_count || 0) + 1,
     occurrence_snooze_count: newOccurrenceCount,
-    last_reminded_at_utc: null, // Allow re-reminder after snooze
+    last_reminded_at_utc: null,
   }).eq('id', task.id);
 
   return formatSnoozeConfirmation(task.title, newOccurrenceCount, snoozeDisplay);
+}
+
+// ============================================================
+// STOP — pause all tasks
+// ============================================================
+async function handleStop(supabase: any, user: any): Promise<string> {
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'active');
+
+  const count = tasks?.length || 0;
+
+  if (count > 0) {
+    await supabase
+      .from('tasks')
+      .update({ status: 'paused' })
+      .eq('user_id', user.id)
+      .eq('status', 'active');
+  }
+
+  return formatPauseConfirmation(count);
+}
+
+// ============================================================
+// START/YES/RESUME — resume paused tasks
+// ============================================================
+async function handleResume(supabase: any, user: any): Promise<string> {
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'paused');
+
+  const count = tasks?.length || 0;
+
+  if (count > 0) {
+    await supabase
+      .from('tasks')
+      .update({ status: 'active' })
+      .eq('user_id', user.id)
+      .eq('status', 'paused');
+  }
+
+  return formatResumeConfirmation(count);
 }
