@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
   const { phone, otp } = await req.json();
   const supabase = createServiceClient();
 
-  // Normalise the phone for verification
   const normalised = normaliseUKPhone(phone || '') || phone;
 
   const { data: authData, error } = await supabase.auth.verifyOtp({
@@ -45,18 +44,27 @@ export async function POST(req: NextRequest) {
 
     if (insertError) {
       console.error('User creation error:', insertError);
-      // If it's a duplicate key error, the user already exists with a different phone format
-      // Try to continue anyway
       if (!insertError.message.includes('duplicate')) {
         return NextResponse.json({ error: 'failed to create account. try again.' }, { status: 500 });
       }
     }
   }
 
-  return NextResponse.json({
+  // Set cookie with phone number for dashboard auth
+  const response = NextResponse.json({
     success: true,
     userId: authData.user?.id,
     phone: normalised,
     session: authData.session,
   });
+
+  response.cookies.set('again_phone', normalised, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+    path: '/',
+  });
+
+  return response;
 }
