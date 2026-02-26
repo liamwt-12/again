@@ -13,15 +13,19 @@ function normaliseUKPhone(input: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  const { phone, title, cadence_type, cadence_meta, reminder_time_local } = await req.json();
+  const { phone: bodyPhone, title, cadence_type, cadence_meta, reminder_time_local } = await req.json();
   const supabase = createServiceClient();
 
-  const normalised = normaliseUKPhone(phone || '');
+  // Get phone from body or cookie
+  const cookiePhone = req.cookies.get('again_phone')?.value;
+  const rawPhone = bodyPhone || cookiePhone || '';
+  const normalised = normaliseUKPhone(rawPhone) || rawPhone;
+
   if (!normalised) {
-    return NextResponse.json({ error: 'invalid phone number' }, { status: 400 });
+    return NextResponse.json({ error: 'not logged in' }, { status: 401 });
   }
 
-  // Find or validate user
+  // Find user
   const { data: user } = await supabase
     .from('users')
     .select('id, plan, phone')
@@ -65,10 +69,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'failed to create task' }, { status: 500 });
   }
 
-  // If first task, send onboarding SMS with save contact link
+  // If first task, send onboarding SMS
   if (taskStatus === 'active' && (count || 0) === 0) {
     const onboardingText = formatOnboarding();
-
     await supabase.from('sms_events').insert({
       user_id: user.id,
       task_id: task.id,
@@ -76,7 +79,6 @@ export async function POST(req: NextRequest) {
       kind: 'system',
       body: onboardingText,
     });
-
     await sendSMS(user.phone, onboardingText);
   }
 
