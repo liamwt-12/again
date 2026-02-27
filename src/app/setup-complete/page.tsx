@@ -28,8 +28,8 @@ export default function SetupCompletePage() {
       <div className={styles.card}>
         <div className={styles.cardLabel}>one thing</div>
         <p className={styles.cardText}>
-          save this number as &quot;again&quot; so you<br />
-          recognise it when it texts you.
+          tap below, then tap <strong>&quot;Create New Contact&quot;</strong><br />
+          so you recognise again when it texts you.
         </p>
         <a href="/save" className={styles.saveBtn}>
           save contact →
@@ -37,12 +37,15 @@ export default function SetupCompletePage() {
         <div className={styles.number}>{formatNumber(twilioNumber)}</div>
       </div>
 
+      <a href="/dashboard" className={styles.dashLink}>
+        my tasks →
+      </a>
+
       <div className={styles.footer}>
         <p className={styles.footerText}>
           that&apos;s it. no app to check.<br />
           it finds you.
         </p>
-        <a href="/" className={styles.homeLink}>getagain.co.uk</a>
       </div>
     </div>
   );
