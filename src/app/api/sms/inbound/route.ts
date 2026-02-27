@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     responseText = await handleDelete(supabase, user);
   } else if (command.startsWith('ADD ') || command === 'ADD') {
     responseText = await handleAdd(supabase, user, body.trim());
-  } else if (isAddReply(supabase, user, command)) {
+  } else if (isAddReply(command)) {
     responseText = await handleAddReply(supabase, user, body.trim());
   } else {
     responseText = formatInvalidCommand();
@@ -228,13 +228,12 @@ async function createTaskFromSMS(
   return `${title.toUpperCase()} added.\n\n${cadence} at ${nextTimeStr}.\nnext: ${nextDateStr} at ${nextTimeStr}.`;
 }
 
-// Check if user has a pending ADD conversation
-async function isAddReply(supabase: any, user: any, command: string): Promise<boolean> {
-  // Quick check: is this a cadence or time reply?
+// Check if this looks like a reply to an ADD conversation
+function isAddReply(command: string): boolean {
   const cadences = ['DAILY', 'WEEKLY', 'MONTHLY', 'ONCE'];
+  if (cadences.includes(command)) return true;
   const isTimeReply = /^\d{1,2}(:\d{2})?\s*(AM|PM)?$/i.test(command);
-  if (cadences.includes(command) || isTimeReply) return true;
-  return false;
+  return isTimeReply;
 }
 
 async function handleAddReply(supabase: any, user: any, rawBody: string): Promise<string> {
