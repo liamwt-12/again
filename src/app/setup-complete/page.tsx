@@ -21,19 +21,16 @@ export default function SetupCompletePage() {
 
       <h1 className={styles.title}>you&apos;re set up.</h1>
       <p className={styles.sub}>
-        your first reminder is on its way.<br />
-        when it arrives, reply <strong>DONE</strong> or <strong>SNOOZE</strong>.
+        check your messages — we&apos;ve sent you a test reminder.<br />
+        reply <strong>DONE</strong> or <strong>SNOOZE</strong> to try it out.
       </p>
 
       <div className={styles.card}>
         <div className={styles.cardLabel}>one thing</div>
         <p className={styles.cardText}>
-          tap below, then tap <strong>&quot;Create New Contact&quot;</strong><br />
-          so you recognise again when it texts you.
+          save this number in your contacts as <strong>&quot;again&quot;</strong><br />
+          so you recognise it when it texts you.
         </p>
-        <a href="/save" className={styles.saveBtn}>
-          save contact →
-        </a>
         <div className={styles.number}>{formatNumber(twilioNumber)}</div>
       </div>
 

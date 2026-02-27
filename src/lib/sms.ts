@@ -56,7 +56,7 @@ export function formatNoPending(): string {
 }
 
 export function formatInvalidCommand(): string {
-  return `reply DONE or SNOOZE.`;
+  return `reply DONE, SNOOZE, or text ADD to create a task.`;
 }
 
 // ============================================================
@@ -64,7 +64,18 @@ export function formatInvalidCommand(): string {
 // ============================================================
 
 export function formatOnceDone(taskTitle: string): string {
-  return `${taskTitle}\ndone. that's it — no repeats.\n\nneed another reminder?\ngetagain.co.uk/dashboard`;
+  return `${taskTitle}\ndone. that's it — no repeats.\n\nneed another reminder?\ntext ADD or visit getagain.co.uk/dashboard`;
+}
+
+// ============================================================
+// DELETE
+// ============================================================
+
+export function formatDeleteConfirmation(taskTitle: string, hasTasksLeft: boolean): string {
+  if (hasTasksLeft) {
+    return `${taskTitle}\ndeleted. gone forever.`;
+  }
+  return `${taskTitle}\ndeleted. gone forever.\n\ngot another one? text ADD to set up a new task.`;
 }
 
 // ============================================================
@@ -72,7 +83,7 @@ export function formatOnceDone(taskTitle: string): string {
 // ============================================================
 
 export function formatOnboarding(): string {
-  return `welcome to again.\n\nwhen a task is due, you'll get a text. reply DONE or SNOOZE. that's it.\n\nsave this contact:\ngetagain.co.uk/save`;
+  return `welcome to again.\n\nsave this number as "again" in your contacts.\n\nwhen a task is due, you'll get a text. reply DONE or SNOOZE. that's it.`;
 }
 
 // ============================================================
@@ -101,7 +112,7 @@ export function formatSilentCheckin(): string {
 }
 
 export function formatNudge(): string {
-  return `that worked. got another one?\ngetagain.co.uk/dashboard`;
+  return `that worked. got another one?\ntext ADD or visit getagain.co.uk/dashboard`;
 }
 
 export function formatPauseConfirmation(taskCount: number): string {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
 import { sendSMS, formatOnboarding } from '@/lib/sms';
-import { calculateNextDue } from '@/lib/scheduler';
+import { calculateNextDue, formatDateForSMS } from '@/lib/scheduler';
 
 function normaliseUKPhone(input: string): string | null {
   const digits = input.replace(/\D/g, '');
@@ -25,35 +25,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'not logged in' }, { status: 401 });
   }
 
-  // Find user
   const { data: user } = await supabase
-    .from('users')
-    .select('id, plan, phone')
-    .eq('phone', normalised)
-    .single();
+    .from('users').select('id, plan, phone')
+    .eq('phone', normalised).single();
 
   if (!user) {
     return NextResponse.json({ error: 'user not found' }, { status: 404 });
   }
 
-  // Check task limit for free users
+  // Check task limit
   const { count } = await supabase
-    .from('tasks')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .eq('status', 'active');
+    .from('tasks').select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id).eq('status', 'active');
 
   const isOverLimit = user.plan === 'free' && (count || 0) >= 1;
   const taskStatus = isOverLimit ? 'inactive' : 'active';
 
-  // Calculate next due date
   const nextDue = calculateNextDue(
     cadence_type,
     cadence_meta || null,
     reminder_time_local
   );
 
-  // Create task
   const { data: task, error } = await supabase.from('tasks').insert({
     user_id: user.id,
     title: title.toUpperCase(),
@@ -69,17 +62,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'failed to create task' }, { status: 500 });
   }
 
-  // If first task, send onboarding SMS
+  // FIRST TASK — demo on signup
   if (taskStatus === 'active' && (count || 0) === 0) {
+    // Send onboarding welcome
     const onboardingText = formatOnboarding();
     await supabase.from('sms_events').insert({
-      user_id: user.id,
-      task_id: task.id,
-      direction: 'out',
-      kind: 'system',
-      body: onboardingText,
+      user_id: user.id, task_id: task.id,
+      direction: 'out', kind: 'system', body: onboardingText,
     });
     await sendSMS(user.phone, onboardingText);
+
+    // Wait 3 seconds then send demo reminder so they can try DONE immediately
+    setTimeout(async () => {
+      try {
+        const demoText = `${title.toUpperCase()}\ndue now — this is a test.\nreply DONE or SNOOZE to try it out.`;
+
+        await supabase.from('sms_events').insert({
+          user_id: user.id, task_id: task.id,
+          direction: 'out', kind: 'demo', body: demoText,
+        });
+
+        // Mark as reminded so DONE handler can find it
+        await supabase.from('tasks').update({
+          last_reminded_at_utc: new Date().toISOString(),
+        }).eq('id', task.id);
+
+        await sendSMS(user.phone, demoText);
+      } catch (err) {
+        console.error('Demo reminder failed:', err);
+      }
+    }, 3000);
   }
 
   return NextResponse.json({
