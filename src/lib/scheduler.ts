@@ -1,10 +1,11 @@
 // again — task scheduling and recurrence logic
 
-export type CadenceType = 'daily' | 'weekly' | 'monthly';
+export type CadenceType = 'daily' | 'weekly' | 'monthly' | 'once';
 
 export interface CadenceMeta {
   day_of_week?: string;  // 'monday', 'tuesday', etc.
   day_of_month?: number; // 1-31
+  once_date?: string;    // 'YYYY-MM-DD' for one-off tasks
 }
 
 /**
@@ -21,10 +22,26 @@ export function calculateNextDue(
   const [hours, minutes] = reminderTimeLocal.split(':').map(Number);
 
   switch (cadenceType) {
+    case 'once': {
+      // One-off: use the specific date from meta, or today/tomorrow
+      const onceDate = cadenceMeta?.once_date;
+      if (onceDate) {
+        const [y, m, d] = onceDate.split('-').map(Number);
+        const next = new Date(Date.UTC(y, m - 1, d, hours, minutes, 0, 0));
+        return next;
+      }
+      // Fallback: next occurrence at the given time
+      const next = new Date(now);
+      next.setUTCHours(hours, minutes, 0, 0);
+      if (next <= now) {
+        next.setUTCDate(next.getUTCDate() + 1);
+      }
+      return next;
+    }
+
     case 'daily': {
       const next = new Date(now);
       next.setUTCHours(hours, minutes, 0, 0);
-      // If the time has passed today, move to tomorrow
       if (next <= now) {
         next.setUTCDate(next.getUTCDate() + 1);
       }
@@ -53,14 +70,12 @@ export function calculateNextDue(
       next.setUTCHours(hours, minutes, 0, 0);
       next.setUTCDate(dayOfMonth);
 
-      // If the date has passed this month, move to next month
       if (next <= now) {
         next.setUTCMonth(next.getUTCMonth() + 1);
       }
 
-      // Handle months with fewer days (e.g., Feb 30 → Feb 28)
       if (next.getUTCDate() !== dayOfMonth) {
-        next.setUTCDate(0); // Last day of previous month
+        next.setUTCDate(0);
       }
 
       return next;
@@ -73,22 +88,17 @@ export function calculateNextDue(
 
 /**
  * Calculate smart snooze time.
- * 8am–5pm → +3 hours
- * 5pm–11pm → next morning 9am
- * 11pm–8am → next morning 9am
  */
 export function calculateSmartSnooze(now?: Date): Date {
   const current = now || new Date();
-  const hour = current.getUTCHours(); // Using UTC = GMT for V1
+  const hour = current.getUTCHours();
 
   if (hour >= 8 && hour < 17) {
-    // Business hours: +3 hours
     const snooze = new Date(current);
     snooze.setUTCHours(snooze.getUTCHours() + 3);
     snooze.setUTCMinutes(0, 0, 0);
     return snooze;
   } else {
-    // Evening/night: next morning 9am
     const snooze = new Date(current);
     if (hour >= 17) {
       snooze.setUTCDate(snooze.getUTCDate() + 1);
@@ -127,7 +137,6 @@ export function calculateExplicitSnooze(duration: '1H' | '3H' | '1D', reminderTi
 
 /**
  * Format a date for SMS display.
- * Uses format: "March 1, 9:00 AM"
  */
 export function formatDateForSMS(date: Date): { date: string; time: string } {
   const months = [
@@ -152,7 +161,6 @@ export function formatDateForSMS(date: Date): { date: string; time: string } {
 
 /**
  * Format a snooze time for SMS display.
- * Shows "today at 3:00 PM" or "tomorrow at 9:00 AM"
  */
 export function formatSnoozeTimeForSMS(snoozeDate: Date, now?: Date): string {
   const current = now || new Date();
