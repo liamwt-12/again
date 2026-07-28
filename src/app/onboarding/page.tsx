@@ -21,10 +21,7 @@ export default function WaitingListPage() {
 
         <div className={styles.label}>waiting list</div>
         <h2 className={styles.title}>we&apos;re closed for now.</h2>
-        <p className={styles.sub}>
-          again isn&apos;t taking new signups. no date promised — but if that changes,
-          the list hears first.
-        </p>
+        <p className={styles.sub}>no date promised — but if that changes, the list hears first.</p>
 
         <WaitingList />
 

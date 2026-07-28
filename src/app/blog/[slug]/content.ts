@@ -10,8 +10,8 @@ export const articleContent: Record<string, string> = {
 <p>What if you got a text message — the same way your mum or your mate texts you — saying "GAS SAFETY CERTS — due today. Reply DONE or SNOOZE."</p>
 <p>You can't ignore a text. It sits in your messages until you deal with it. That's exactly how <strong>again</strong> works. You set it up once with the task name and schedule, and it texts you every time it's due. Reply DONE when it's sorted. Reply SNOOZE if you need another day. It keeps going until you act.</p>
 <p>No app to download. No dashboard to check. No spreadsheet to update. Just a text.</p>
-<h2>Set it up in 20 seconds</h2>
-<p>Go to <strong>getagain.co.uk</strong>, enter your phone number, add "GAS SAFETY CERTS" as a monthly task, pick a time, and you're done. First reminder is on its way. Every month after that, you'll get a text. One less thing to worry about.</p>
+<h2>A note on again</h2>
+<p><strong>again</strong> is closed to new signups, so there's nothing to set up right now. The approach still holds though: pick the one renewal you keep forgetting, and put it somewhere that will interrupt you rather than somewhere you have to remember to check.</p>
 `,
 
 'tradesman-admin-reminder': `
