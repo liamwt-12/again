@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import WaitingList from '@/components/WaitingList';
 import styles from '../blog.module.css';
 import { posts } from '../posts';
 import { articleContent } from './content';
@@ -51,12 +52,8 @@ export default function BlogPost({ params }: Props) {
         <div className={styles.articleBody} dangerouslySetInnerHTML={{ __html: content }} />
 
         <div className={styles.ctaBox}>
-          <div className={styles.ctaTitle}>stop forgetting. start replying.</div>
-          <div className={styles.ctaDesc}>
-            add your first task in 20 seconds. no app needed.<br />
-            just your phone number and the thing you keep putting off.
-          </div>
-          <Link href="/onboarding" className={styles.ctaBtn}>start free — 1 task</Link>
+          <div className={styles.ctaTitle}>not taking new signups.</div>
+          <WaitingList center />
         </div>
       </article>
 

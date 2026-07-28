@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import WaitingList from '@/components/WaitingList';
 import styles from './page.module.css';
 
 export default function LandingPage() {
@@ -36,8 +37,7 @@ export default function LandingPage() {
             <p className={styles.heroSub}>no boards. no projects. just tasks that need doing.</p>
             <p className={styles.heroSub}>add it once. get a text until it's done.</p>
             <div className={styles.heroCta}>
-              <a href="/onboarding" className={styles.btnPrimary}>start free — 1 task</a>
-              <span className={styles.heroHint}>no app to open. it finds you.</span>
+              <WaitingList />
             </div>
           </div>
 
@@ -261,20 +261,19 @@ export default function LandingPage() {
 
         <div style={{ marginTop: '32px' }}>
           <div className={styles.priceFree}>free forever: 1 active task.</div>
-          <div className={styles.priceFreeSub}>no credit card required. start now, upgrade when you need more.</div>
+          <div className={styles.priceFreeSub}>
+            these were the plans while again was open. it isn&apos;t taking new signups, so
+            nothing is on sale right now.
+          </div>
         </div>
       </section>
 
       {/* ====== FINAL CTA ====== */}
       <section className={`${styles.finalSection} ${styles.reveal}`}>
         <div className={styles.finalRule} />
-        <h2 className={styles.finalTitle}>stop forgetting. start replying.</h2>
-        <p className={styles.finalSub}>
-          add your first task in 20 seconds. no app to download. no account to configure. just your phone number and the thing you keep putting off.
-        </p>
+        <h2 className={styles.finalTitle}>not right now.</h2>
         <div className={styles.finalCta}>
-          <a href="/onboarding" className={styles.btnPrimary}>start free — 1 task</a>
-          <span className={styles.heroHint}>uk beta · sms-powered · no fluff</span>
+          <WaitingList center />
         </div>
       </section>
 
@@ -285,6 +284,8 @@ export default function LandingPage() {
           <div className={styles.footerWordmark}>again</div>
           <div className={styles.footerLinks}>
             <a href="/dashboard" className={styles.footerLink}>my tasks</a>
+            <span className={styles.footerDivider}>·</span>
+            <a href="/privacy" className={styles.footerLink}>privacy</a>
             <span className={styles.footerDivider}>·</span>
             <div className={styles.footerNote}>tasks that refuse to disappear.</div>
           </div>

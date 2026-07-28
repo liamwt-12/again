@@ -37,7 +37,7 @@ export default function BlogIndex() {
         <div className={styles.rule} />
         <div className={styles.footerContent}>
           <Link href="/" className={styles.footerLink}>again</Link>
-          <Link href="/onboarding" className={styles.footerCta}>start free →</Link>
+          <Link href="/onboarding" className={styles.footerCta}>waiting list →</Link>
         </div>
       </footer>
     </div>
