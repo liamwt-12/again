@@ -6,8 +6,10 @@ export async function GET() {
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'weekly' },
     { url: '/blog', priority: '0.8', changefreq: 'weekly' },
-    { url: '/onboarding', priority: '0.9', changefreq: 'monthly' },
+    // /onboarding is the waiting list now, not a signup — deprioritised.
+    { url: '/onboarding', priority: '0.4', changefreq: 'monthly' },
     { url: '/dashboard', priority: '0.5', changefreq: 'monthly' },
+    { url: '/privacy', priority: '0.3', changefreq: 'yearly' },
   ];
 
   const blogPages = posts.map((post) => ({
